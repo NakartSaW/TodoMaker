@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: todomaker-app
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: todomaker-app
+      template:
+        metadata:
+          labels:
+            app: todomaker-app
+        spec:
+          containers:
+            - name: todo-notes-app
+              image: nakartsaw/todomaker-app:latest
+              ports:
+                - containerPort: 8082
+              env:
+                - name: SPRING_DATASOURCE_URL
+                  value: jdbc:mysql://mysql:3306/todo_notes_db
+                - name: SPRING_DATASOURCE_USERNAME
+                  value: root
+                - name: SPRING_DATASOURCE_PASSWORD
+                  value: root
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: todomaker-service
+    spec:
+      selector:
+        app: todomaker-app
+      ports:
+        - protocol: TCP
+          port: 8082
+          targetPort: 8082
+      type: LoadBalancer
