@@ -4,19 +4,25 @@ server:
 spring:
   cloud:
     gateway:
-      mvc:
-        routes:
-          - id: users-service
-            uri: http://todomaker-service:8082
-            predicates:
-              - Path=/users/**
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:3000"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        - id: users-service
+          uri: http://todomaker-service:8082
+          predicates:
+            - Path=/users/**
 
-          - id: notes-service
-            uri: http://todomaker-service:8082
-            predicates:
-              - Path=/notes/**
+        - id: notes-service
+          uri: http://todomaker-service:8082
+          predicates:
+            - Path=/notes/**
 
-          - id: todos-service
-            uri: http://todomaker-service:8082
-            predicates:
-              - Path=/todos/**
+        - id: todos-service
+          uri: http://todomaker-service:8082
+          predicates:
+            - Path=/todos/**
