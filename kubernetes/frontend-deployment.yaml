@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: todomaker-frontend
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: todomaker-frontend
+      template:
+        metadata:
+          labels:
+            app: todomaker-frontend
+        spec:
+          containers:
+            - name: frontend
+              image: nakartsaw/todomaker-frontend:latest
+              ports:
+                - containerPort: 80
+              env:
+                - name: REACT_APP_API_BASE_URL
+                  value: "http://todomaker.info/api"
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: todomaker-frontend
+    spec:
+      selector:
+        app: todomaker-frontend
+      ports:
+        - protocol: TCP
+          port: 80
+          targetPort: 80
+      type: ClusterIP
