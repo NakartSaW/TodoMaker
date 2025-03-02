@@ -3,6 +3,7 @@ import {
     getNotes, addNote, updateNote, deleteNote,
     getTodos, addTodo, completeTask, deleteTask
 } from './api/todoService';
+import "./styles.css";
 
 function App() {
     const userId = 1;
@@ -21,8 +22,9 @@ function App() {
         fetchData();
     }, []);
 
-    // Ajouter une note
     const handleAddNote = async () => {
+        if (!noteTitle.trim() && !noteContent.trim()) return; // Prevent adding empty notes
+
         if (editingNoteId) {
             await updateNote(editingNoteId, { title: noteTitle, content: noteContent });
             setEditingNoteId(null);
@@ -35,87 +37,121 @@ function App() {
         setNoteContent('');
     };
 
-    // Modifier une note
     const handleEditNote = (note) => {
         setEditingNoteId(note.id);
         setNoteTitle(note.title);
         setNoteContent(note.content);
     };
 
-    // Supprimer une note
     const handleDeleteNote = async (noteId) => {
         await deleteNote(noteId);
         setNotes(await getNotes(userId));
     };
 
-    // Ajouter une tâche
     const handleAddTodo = async () => {
+        if (!todoTask.trim()) return; // Prevent adding empty tasks
+
         const newTodo = { task: todoTask, completed: false, user: { id: userId } };
         await addTodo(newTodo);
         setTodos(await getTodos(userId));
         setTodoTask('');
     };
 
-    // Marquer une tâche comme complétée
     const handleCompleteTodo = async (todo) => {
         await completeTask(todo.id, todo.task);
-        setTodos(await getTodos(userId));  // Rafraîchir la liste après modification
+        setTodos(await getTodos(userId));
     };
 
-    // Supprimer une tâche
     const handleDeleteTodo = async (todoId) => {
         await deleteTask(todoId);
         setTodos(await getTodos(userId));
     };
 
     return (
-        <div>
-            <h1>Gestion des Notes et Tâches</h1>
+        <div className="app-container">
+            {/* Todo List Container */}
+            <div className="container">
+                <h1>To-Do List</h1>
 
-            <h2>Notes</h2>
-            <input
-                value={noteTitle}
-                onChange={(e) => setNoteTitle(e.target.value)}
-                placeholder="Titre"
-            />
-            <input
-                value={noteContent}
-                onChange={(e) => setNoteContent(e.target.value)}
-                placeholder="Contenu"
-            />
-            <button onClick={handleAddNote}>
-                {editingNoteId ? "Modifier Note" : "Ajouter Note"}
-            </button>
+                <div className="task-input-container">
+                    <input
+                        type="text"
+                        value={todoTask}
+                        onChange={(e) => setTodoTask(e.target.value)}
+                        placeholder="Add your task"
+                        onKeyPress={(e) => e.key === 'Enter' && handleAddTodo()}
+                    />
+                    <button className="add-button" onClick={handleAddTodo}>ADD</button>
+                </div>
 
-            <ul>
-                {notes.map((note) => (
-                    <li key={note.id}>
-                        {note.title}: {note.content}
-                        <button onClick={() => handleEditNote(note)}>✏️ Modifier</button>
-                        <button onClick={() => handleDeleteNote(note.id)}>🗑️ Supprimer</button>
-                    </li>
-                ))}
-            </ul>
+                <ul>
+                    {todos.map((todo) => (
+                        <li key={todo.id} className={todo.completed ? "completed" : ""}>
+                            <div className="checkbox-container">
+                                <input
+                                    type="checkbox"
+                                    className="checkbox"
+                                    checked={todo.completed}
+                                    onChange={() => handleCompleteTodo(todo)}
+                                />
+                            </div>
+                            <span className="task-text">{todo.task}</span>
+                            <button
+                                className="delete-button action-button"
+                                onClick={() => handleDeleteTodo(todo.id)}
+                            >
+                                ×
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            </div>
 
-            <h2>To-Do List</h2>
-            <input
-                value={todoTask}
-                onChange={(e) => setTodoTask(e.target.value)}
-                placeholder="Tâche"
-            />
-            <button onClick={handleAddTodo}>Ajouter Tâche</button>
+            {/* Notes Container */}
+            <div className="container">
+                <h2 className="notes-title">Notes</h2>
 
-            <ul>
-                {todos.map((todo) => (
-                    <li key={todo.id}>
-                        {todo.task} - {todo.completed ? "✅" : "❌"}
-                        {!todo.completed && (
-                            <button onClick={() => handleCompleteTodo(todo)}>✔️ Compléter</button>
-                        )}
-                        <button onClick={() => handleDeleteTodo(todo.id)}>🗑️ Supprimer</button>
-                    </li>
-                ))}
-            </ul>
+                <div className="note-input-container">
+                    <input
+                        type="text"
+                        value={noteTitle}
+                        onChange={(e) => setNoteTitle(e.target.value)}
+                        placeholder="Title"
+                    />
+                    <input
+                        type="text"
+                        value={noteContent}
+                        onChange={(e) => setNoteContent(e.target.value)}
+                        placeholder="Content"
+                    />
+                    <button className="add-button" onClick={handleAddNote}>
+                        {editingNoteId ? "Update Note" : "Add Note"}
+                    </button>
+                </div>
+
+                <div className="notes-list">
+                    {notes.map((note) => (
+                        <div key={note.id} className="note-content">
+                            <span className="note-title">{note.title}</span>
+                            <p className="note-body">{note.content}</p>
+                            <div className="note-actions" style={{ position: 'absolute', top: '10px', right: '10px' }}>
+                                <button
+                                    className="edit-button action-button"
+                                    onClick={() => handleEditNote(note)}
+                                >
+                                    ✏️
+                                </button>
+                                <button
+                                    className="delete-button action-button"
+                                    onClick={() => handleDeleteNote(note.id)}
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
         </div>
     );
 }
